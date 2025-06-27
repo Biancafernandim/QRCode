@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo(a) ao Nosso Casamento!</title>
     <style>
-        /* CSS para deixar a página bonita */
+        /* O seu CSS continua o mesmo aqui... */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400&display=swap');
 
         body {
@@ -29,18 +29,17 @@
             max-width: 550px;
             width: 100%;
         }
-        /* NOVO: Container para a foto */
         .photo-container {
             margin-bottom: 25px;
         }
         #guestPhoto {
             width: 150px;
             height: 150px;
-            border-radius: 50%; /* Deixa a foto redonda */
-            object-fit: cover; /* Garante que a foto não fique distorcida */
+            border-radius: 50%;
+            object-fit: cover;
             border: 5px solid white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            display: none; /* Começa escondida */
+            display: none;
         }
         h1 {
             font-family: 'Playfair Display', serif;
@@ -116,7 +115,7 @@
         const tableNumberDiv = document.getElementById('tableNumber');
         const companionSectionDiv = document.getElementById('companionSection');
         const companionNamesSpan = document.getElementById('companionNames');
-        const guestPhotoEl = document.getElementById('guestPhoto'); // NOVO: Elemento da foto
+        const guestPhotoEl = document.getElementById('guestPhoto');
 
         window.onload = async () => {
             guestInfoDiv.style.display = 'none';
@@ -131,26 +130,23 @@
             }
 
             try {
+                // AQUI VOCÊ DEVE COLAR O SEU LINK PUBLICADO COMO CSV
                 const response = await fetch(googleSheetURL);
                 const csvData = await response.text();
                 const guest = findGuestById(csvData, guestId);
 
                 if (guest) {
-                    // Preenche nome e mesa
                     fullNameSpan.textContent = guest.nome_completo;
                     tableNumberDiv.textContent = guest.mesa;
 
-                    // Lógica dos acompanhantes
                     if (guest.acompanhantes && guest.acompanhantes.trim() !== '') {
                         companionNamesSpan.textContent = guest.acompanhantes;
                         companionSectionDiv.style.display = 'block';
                     }
 
-                    // NOVO: Lógica para exibir a foto
-                    // Verifica se a coluna 'link_foto' existe e não está vazia
                     if (guest.link_foto && guest.link_foto.trim() !== '') {
-                        guestPhotoEl.src = guest.link_foto; // Define o link da imagem
-                        guestPhotoEl.style.display = 'inline-block'; // Mostra a imagem
+                        guestPhotoEl.src = guest.link_foto;
+                        guestPhotoEl.style.display = 'inline-block';
                     }
                     
                     showGuestInfo();
@@ -163,23 +159,39 @@
             }
         };
 
+        // ****** AQUI ESTÁ A CORREÇÃO ******
+        // Esta função agora ignora linhas em branco
         function findGuestById(csv, id) {
             const rows = csv.split('\n');
             const headers = rows[0].split(',').map(h => h.trim());
             const idColumnIndex = headers.indexOf('id');
 
             for (let i = 1; i < rows.length; i++) {
+                // Se a linha estiver vazia, pule para a próxima
+                if (!rows[i] || rows[i].trim() === '') {
+                    continue;
+                }
+
                 const data = rows[i].split(',');
-                if (data.length > idColumnIndex && data[idColumnIndex].trim() === id) {
+                
+                // Se a célula do ID não existir ou estiver vazia, pule para a próxima
+                if (!data[idColumnIndex] || data[idColumnIndex].trim() === '') {
+                    continue;
+                }
+
+                if (data[idColumnIndex].trim() === id) {
                     let guestObject = {};
                     for (let j = 0; j < headers.length; j++) {
-                        guestObject[headers[j]] = data[j] ? data[j].trim() : '';
+                        const cellValue = data[j];
+                        guestObject[headers[j]] = cellValue ? cellValue.trim() : '';
                     }
                     return guestObject;
                 }
             }
             return null;
         }
+        // ****** FIM DA CORREÇÃO ******
+
 
         function showGuestInfo() {
             loadingDiv.style.display = 'none';
