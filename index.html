@@ -63,13 +63,14 @@
                     fullNameSpan.textContent = guest.nome_completo;
                     tableNumberDiv.textContent = guest.mesa;
 
-                    // ****** AQUI ESTÁ A ALTERAÇÃO ******
+                    // ****** AQUI ESTÁ A ALTERAÇÃO FINAL ******
                     if (guest.acompanhantes && guest.acompanhantes.trim() !== '') {
-                        const formattedCompanions = guest.acompanhantes.replace(/\n/g, '<br>');
+                        // Agora ele troca o PONTO E VÍRGULA (;) por quebra de linha
+                        const formattedCompanions = guest.acompanhantes.replace(/;/g, '<br>');
                         companionNamesSpan.innerHTML = formattedCompanions;
                         companionSectionDiv.style.display = 'block';
                     }
-                    // ****** FIM DA ALTERAÇÃO ******
+                    // ****** FIM DA ALTERAÇÃO FINAL ******
 
                     if (guest.link_foto && guest.link_foto.trim() !== '') {
                         guestPhotoEl.src = guest.link_foto;
