@@ -4,10 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo(a) ao Nosso Casamento!</title>
+    
     <style>
-        /* Seu CSS aqui, sem alterações */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400&display=swap');
-        body{font-family:'Poppins',sans-serif;background-color:#d4e0e7;color:#333;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px;text-align:center;box-sizing:border-box}.card{background:white;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,.1);padding:40px;max-width:550px;width:100%}.photo-container{margin-bottom:25px}#guestPhoto{width:150px;height:150px;border-radius:50%;object-fit:cover;border:5px solid white;box-shadow:0 4px 15px rgba(0,0,0,.15);display:none}h1{font-family:'Playfair Display',serif;color:#42567b;margin-top:0;font-size:2.2em;line-height:1.2}.info-section{margin:25px 0}#tableNumber{font-size:2.5em;font-weight:bold;color:#42567b;margin:10px 0;padding:10px;border:2px dashed #b5c2d5;border-radius:10px;display:inline-block}#companionSection{display:none;background-color:#f1f2ff;border-left:4px solid #42567b;padding:15px;text-align:left;margin-top:20px;border-radius:5px}#companionSection p{margin:0;font-size:1em}#companionNames{font-weight:bold}#loading,#error{display:none}
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f6f9fd; /* Cor de fundo do nosso tema */
+            color: #000d30; /* Cor de texto do nosso tema */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* Sombra do nosso tema */
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+            border-top: 5px solid #000441; /* Borda superior do nosso tema */
+        }
+        .photo-container {
+            margin-bottom: 25px;
+        }
+        #guestPhoto {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,.15);
+            display: none;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #08004d; /* Cor do título do nosso tema */
+            margin-top: 0;
+            font-size: 2.2em;
+            line-height: 1.2;
+        }
+        .info-section {
+            margin: 25px 0;
+        }
+        #tableNumber {
+            font-size: 2.5em;
+            font-weight: 700; /* Usei um peso maior para destaque */
+            color: #08004d; /* Cor de destaque do nosso tema */
+            margin: 10px 0;
+            padding: 10px 20px;
+            border: 2px dashed #d6e7ff; /* Cor da borda do nosso tema */
+            border-radius: 10px;
+            display: inline-block;
+        }
+        #companionSection {
+            display: none;
+            background-color: #f6f9fd; /* Cor de fundo de destaque do nosso tema */
+            border-left: 4px solid #000441; /* Cor da borda do nosso tema */
+            padding: 15px;
+            text-align: left;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        #companionSection p {
+            margin: 0;
+            font-size: 1em;
+        }
+        #companionNames {
+            font-weight: bold;
+        }
+        #loading, #error {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -21,7 +94,7 @@
                 <p>Mesa</p>
                 <div id="tableNumber">...</div>
             </div>
-            <div id="companionSection"><p>Com: <span id="companionNames"></span></p></div>
+            <div id="companionSection"><p>Com: <br><span id="companionNames"></span></p></div>
         </div>
         <div id="loading"><h1>Buscando seus dados...</h1></div>
         <div id="error">
@@ -31,7 +104,7 @@
     </div>
 
     <script>
-        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQS4nijSq1oF9NT5OA_TFx9g2z-MkKHB3kKUJNU15Ku54pZJ2b7dKduG5SKStLwonuWak3bKlXxMwWN/pub?gid=1738688059&single=true&output=csv'; // NÃO ESQUEÇA DE COLAR SEU LINK AQUI
+        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQS4nijSq1oF9NT5OA_TFx9g2z-MkKHB3kKUJNU15Ku54pZJ2b7dKduG5SKStLwonuWak3bKlXxMwWN/pub?gid=1738688059&single=true&output=csv';
 
         const guestInfoDiv = document.getElementById('guestInfo');
         const loadingDiv = document.getElementById('loading');
@@ -62,15 +135,12 @@
                 if (guest) {
                     fullNameSpan.textContent = guest.nome_completo;
                     tableNumberDiv.textContent = guest.mesa;
-
-                    // ****** AQUI ESTÁ A ALTERAÇÃO FINAL ******
+                    
                     if (guest.acompanhantes && guest.acompanhantes.trim() !== '') {
-                        // Agora ele troca o PONTO E VÍRGULA (;) por quebra de linha
                         const formattedCompanions = guest.acompanhantes.replace(/;/g, '<br>');
                         companionNamesSpan.innerHTML = formattedCompanions;
                         companionSectionDiv.style.display = 'block';
                     }
-                    // ****** FIM DA ALTERAÇÃO FINAL ******
 
                     if (guest.link_foto && guest.link_foto.trim() !== '') {
                         guestPhotoEl.src = guest.link_foto;
