@@ -10,8 +10,8 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f6f9fd; /* Sua cor de fundo */
-            color: #000d30; /* Sua cor de texto */
+            background-color: #f6f9fd;
+            color: #000d30;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,7 +28,7 @@
             padding: 40px;
             max-width: 550px;
             width: 100%;
-            border-top: 5px solid #000441; /* Sua borda superior */
+            border-top: 5px solid #000441;
         }
         .photo-container {
             margin-bottom: 25px;
@@ -44,38 +44,34 @@
         }
         h1 {
             font-family: 'Playfair Display', serif;
-            color: #08004d; /* Sua cor de título */
+            color: #08004d;
             margin-top: 0;
             font-size: 2.2em;
             line-height: 1.2;
         }
-
-        /* ----- CÓDIGO ATUALIZADO AQUI ----- */
         .info-section {
             margin: 25px 0;
-            text-align: center; /* Garante a centralização */
+            text-align: center;
         }
         .table-intro {
-            color: #555; /* Uma cor mais suave para o texto de introdução */
-            margin-bottom: 8px; /* Espaçamento entre a frase e o número */
-            font-size: 1em; /* Tamanho da fonte */
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 1em;
         }
-        /* ----- FIM DA ATUALIZAÇÃO ----- */
-
         #tableNumber {
             font-size: 2.5em;
             font-weight: 700; 
-            color: #08004d; /* Sua cor de destaque */
+            color: #08004d;
             margin: 10px 0;
             padding: 10px 20px;
-            border: 2px dashed #d6e7ff; /* Sua cor de borda */
+            border: 2px dashed #d6e7ff;
             border-radius: 10px;
             display: inline-block;
         }
         #companionSection {
             display: none;
-            background-color: #f6f9fd; /* Sua cor de fundo de destaque */
-            border-left: 4px solid #000441; /* Sua cor de borda */
+            background-color: #f6f9fd;
+            border-left: 4px solid #000441;
             padding: 15px;
             text-align: left;
             margin-top: 20px;
@@ -99,12 +95,11 @@
         <div id="guestInfo">
             <div class="photo-container"><img id="guestPhoto" src="" alt="Foto do Convidado"></div>
             <h1>Bem-vindo(a), <br><span id="fullName">...</span>!</h1>
-
             <div class="info-section">
                 <p class="table-intro">Aguardamos você na mesa</p>
                 <div id="tableNumber">...</div>
             </div>
-            <div id="companionSection"><p>Com: <br><span id="companionNames"></span></p></div>
+            <div id="companionSection"><p>Com: <span id="companionNames"></span></p></div>
         </div>
         <div id="loading"><h1>Buscando seus dados...</h1></div>
         <div id="error">
@@ -114,13 +109,90 @@
     </div>
 
     <script>
-        // Lembre-se de colocar o seu link do Google Planilhas aqui!
-        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQS4nijSq1oF9NT5OA_TFx9g2z-MkKHB3kKUJNU15Ku54pZJ2b7dKduG5SKStLwonuWak3bKlXxMwWN/pub?gid=1738688059&single=true&output=csv';
+        const googleSheetURL = 'COLE_SEU_LINK_CSV_AQUI';
 
-        // O restante do seu código JavaScript continua o mesmo...
         const guestInfoDiv = document.getElementById('guestInfo');
         const loadingDiv = document.getElementById('loading');
-        // ...
+        const errorDiv = document.getElementById('error');
+        const fullNameSpan = document.getElementById('fullName');
+        const tableNumberDiv = document.getElementById('tableNumber');
+        const companionSectionDiv = document.getElementById('companionSection');
+        const companionNamesSpan = document.getElementById('companionNames');
+        const guestPhotoEl = document.getElementById('guestPhoto');
+
+        window.onload = async () => {
+            guestInfoDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            const params = new URLSearchParams(window.location.search);
+            const guestId = params.get('id');
+
+            if (!guestId) {
+                showError();
+                return;
+            }
+
+            try {
+                const response = await fetch(googleSheetURL);
+                const csvData = await response.text();
+                const guest = findGuestById(csvData, guestId);
+
+                if (guest) {
+                    fullNameSpan.textContent = guest.nome_completo;
+                    tableNumberDiv.textContent = guest.mesa;
+
+                    if (guest.acompanhantes && guest.acompanhantes.trim() !== '') {
+                        const formattedCompanions = guest.acompanhantes.replace(/;/g, '<br>');
+                        companionNamesSpan.innerHTML = formattedCompanions;
+                        companionSectionDiv.style.display = 'block';
+                    }
+
+                    if (guest.link_foto && guest.link_foto.trim() !== '') {
+                        guestPhotoEl.src = guest.link_foto;
+                        guestPhotoEl.style.display = 'inline-block';
+                    }
+                    
+                    showGuestInfo();
+                } else {
+                    showError();
+                }
+            } catch (e) {
+                console.error('Erro ao buscar dados:', e);
+                showError();
+            }
+        };
+
+        function findGuestById(csv, id) {
+            const rows = csv.split('\n');
+            const headers = rows[0].split(',').map(h => h.trim());
+            const idColumnIndex = headers.indexOf('id');
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i] || rows[i].trim() === '') { continue; }
+                const data = rows[i].split(',');
+                if (!data[idColumnIndex] || data[idColumnIndex].trim() === '') { continue; }
+                if (data[idColumnIndex].trim() === id) {
+                    let guestObject = {};
+                    for (let j = 0; j < headers.length; j++) {
+                        const cellValue = data[j];
+                        guestObject[headers[j]] = cellValue ? cellValue.trim() : '';
+                    }
+                    return guestObject;
+                }
+            }
+            return null;
+        }
+
+        function showGuestInfo() {
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            guestInfoDiv.style.display = 'block';
+        }
+
+        function showError() {
+            loadingDiv.style.display = 'none';
+            guestInfoDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+        }
     </script>
 </body>
 </html>
